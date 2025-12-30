@@ -60,7 +60,7 @@ const ProfileScreen: React.FC = () => {
           .maybeSingle();
 
         if (data) {
-          setProfile(data);
+          setProfile(data as any);
         }
       }
     };
