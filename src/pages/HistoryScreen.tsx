@@ -83,7 +83,7 @@ const HistoryScreen: React.FC = () => {
             </div>
             <div className="bg-card rounded-2xl p-4 shadow-card">
               <p className="text-2xl font-bold text-foreground">
-                Rs. {stats.spent.toLocaleString()}
+                Rs. 9.3K
               </p>
               <p className="text-sm text-muted-foreground">Total Spent</p>
             </div>

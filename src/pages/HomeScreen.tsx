@@ -5,9 +5,9 @@ import StatusBar from '@/components/StatusBar';
 import BottomNav from '@/components/BottomNav';
 import ServiceCard from '@/components/ServiceCard';
 import { Button } from '@/components/ui/button';
-import { 
-  Car, Bike, Battery, Fuel, CircleDot, 
-  AlertTriangle, MapPin, Bell, ChevronRight 
+import {
+  Car, Bike, Battery, Fuel, CircleDot,
+  AlertTriangle, MapPin, Bell, ChevronRight, Navigation
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBooking } from '@/contexts/BookingContext';
@@ -24,7 +24,7 @@ const services = [
 const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { setSelectedService } = useBooking();
+  const { setSelectedService, pickupLocation, setPickupLocation } = useBooking();
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
@@ -35,7 +35,7 @@ const HomeScreen: React.FC = () => {
           .select('full_name')
           .eq('user_id', user.id)
           .maybeSingle();
-        
+
         if (data?.full_name) {
           setUserName(data.full_name);
         } else {
@@ -66,22 +66,43 @@ const HomeScreen: React.FC = () => {
               <p className="text-muted-foreground text-sm">{getGreeting()}</p>
               <h1 className="text-2xl font-bold text-foreground">{userName}</h1>
             </div>
-            <button className="relative p-3 rounded-xl bg-card shadow-card">
+            <button
+              className="relative p-3 rounded-xl bg-card shadow-card"
+              onClick={() => navigate('/profile/notifications')}
+            >
               <Bell className="w-5 h-5 text-foreground" />
               <span className="absolute top-2 right-2 w-2 h-2 bg-crimson rounded-full" />
             </button>
           </div>
 
-          {/* Location */}
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <MapPin className="w-4 h-4 text-secondary" />
-            <span className="text-sm">DHA Phase 6, Karachi</span>
-            <ChevronRight className="w-4 h-4" />
+          {/* Location Bar */}
+          <div className="flex items-center gap-3 animate-slide-up" style={{ animationDelay: '0.05s' }}>
+            <div className="flex-1 flex items-center gap-3 bg-card/50 backdrop-blur-sm p-3 rounded-2xl border border-white/5">
+              <div className="w-6 h-6 rounded-full border-2 border-emerald-500 flex items-center justify-center flex-shrink-0">
+                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+              </div>
+              <input
+                type="text"
+                value={pickupLocation}
+                onChange={(e) => setPickupLocation(e.target.value)}
+                className="flex-1 bg-transparent border-none outline-none text-sm font-medium text-foreground p-0 placeholder:text-muted-foreground"
+                placeholder="Enter location"
+              />
+            </div>
+            <button
+              className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 active:scale-95 transition-transform"
+              onClick={() => {
+                // In a real app, this would get current location
+                navigate('/map');
+              }}
+            >
+              <Navigation className="w-5 h-5 text-white fill-current" />
+            </button>
           </div>
         </div>
 
         {/* Emergency Banner */}
-        <div 
+        <div
           className="mx-6 mb-6 p-4 rounded-2xl bg-crimson/10 border border-crimson/20 animate-slide-up"
           style={{ animationDelay: '0.1s' }}
         >
@@ -93,8 +114,8 @@ const HomeScreen: React.FC = () => {
               <h3 className="text-sm font-semibold text-foreground">Emergency?</h3>
               <p className="text-xs text-muted-foreground">Get immediate help within 5 mins</p>
             </div>
-            <Button 
-              variant="emergency" 
+            <Button
+              variant="emergency"
               size="sm"
               onClick={() => navigate('/map')}
             >
@@ -108,7 +129,7 @@ const HomeScreen: React.FC = () => {
           <h2 className="text-lg font-semibold text-foreground mb-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
             How can we help?
           </h2>
-          
+
           <div className="grid grid-cols-2 gap-4 stagger-children">
             {services.map((service, index) => (
               <ServiceCard
@@ -123,10 +144,10 @@ const HomeScreen: React.FC = () => {
                 variant={index === services.length - 1 ? 'default' : 'default'}
               />
             ))}
-            
+
             {/* More Services */}
-            <button 
-              onClick={() => {}}
+            <button
+              onClick={() => { }}
               className="flex flex-col items-center justify-center p-5 rounded-2xl border-2 border-dashed border-border hover:border-secondary transition-all duration-300"
             >
               <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-3">

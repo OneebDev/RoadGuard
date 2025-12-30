@@ -41,19 +41,21 @@ const menuSections = [
 interface Profile {
   full_name: string | null;
   phone: string | null;
+  member_status: string | null;
 }
 
 const ProfileScreen: React.FC = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [stats, setStats] = useState({ total: 0, spent: 0 });
 
   useEffect(() => {
     const fetchProfile = async () => {
       if (user) {
         const { data, error } = await supabase
           .from('profiles')
-          .select('full_name, phone')
+          .select('full_name, phone, member_status')
           .eq('user_id', user.id)
           .maybeSingle();
 
@@ -63,7 +65,22 @@ const ProfileScreen: React.FC = () => {
       }
     };
 
+    const fetchBookingStats = async () => {
+      if (user) {
+        const { data } = await supabase
+          .from('bookings')
+          .select('price')
+          .eq('user_id', user.id);
+
+        if (data) {
+          const totalSpent = data.reduce((sum, b) => sum + (b.price || 0), 0);
+          setStats({ total: data.length, spent: totalSpent });
+        }
+      }
+    };
+
     fetchProfile();
+    fetchBookingStats();
   }, [user]);
 
   const handleLogout = async () => {
@@ -93,17 +110,21 @@ const ProfileScreen: React.FC = () => {
           {/* Profile Card */}
           <div className="bg-card rounded-2xl p-5 shadow-card mb-6 animate-slide-up">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl gradient-charcoal flex items-center justify-center">
-                <User className="w-8 h-8 text-primary-foreground" />
+              <div className="w-16 h-16 rounded-2xl overflow-hidden bg-charcoal flex-shrink-0">
+                <img
+                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Oneeb"
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="flex-1">
                 <h2 className="text-lg font-bold text-foreground">{displayName}</h2>
                 <p className="text-sm text-muted-foreground">{displayEmail}</p>
-                {profile?.phone && (
-                  <p className="text-sm text-muted-foreground">{profile.phone}</p>
-                )}
               </div>
-              <button className="px-4 py-2 rounded-lg bg-muted text-sm font-medium text-foreground hover:bg-muted/80 transition-colors">
+              <button
+                onClick={() => navigate('/profile/details')}
+                className="px-4 py-2 rounded-lg bg-muted text-sm font-medium text-foreground hover:bg-muted/80 transition-colors"
+              >
                 Edit
               </button>
             </div>
@@ -111,7 +132,7 @@ const ProfileScreen: React.FC = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3 mt-5 pt-5 border-t border-border">
               <div className="text-center">
-                <p className="text-xl font-bold text-foreground">12</p>
+                <p className="text-xl font-bold text-foreground">{stats.total}</p>
                 <p className="text-xs text-muted-foreground">Services</p>
               </div>
               <div className="text-center">
@@ -119,7 +140,7 @@ const ProfileScreen: React.FC = () => {
                 <p className="text-xs text-muted-foreground">Total Spent</p>
               </div>
               <div className="text-center">
-                <p className="text-xl font-bold text-secondary">Gold</p>
+                <p className="text-xl font-bold text-secondary">{profile?.member_status || 'Gold'}</p>
                 <p className="text-xs text-muted-foreground">Member</p>
               </div>
             </div>
